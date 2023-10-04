@@ -1,17 +1,15 @@
-#include "tetris.h"
 #include <iostream>
 #include <fstream>
 #include <time.h>
 #include <random>
 #include <conio.h>
+#include "tetris.h"
 
-Tetris::Tetris(int rows, int cols, int left, int top, int blockSize)
+Tetris::Tetris(int rows, int cols, Draw *draw)
 {
     this->rows = rows;
     this->cols = cols;
-    this->leftMargin = left;
-    this->topMargin = top;
-    this->blockSize = blockSize;
+    this->iDraw = draw;
     for (int row = 0; row < this->rows; row++)
     {
         std::vector<int> rowMap;
@@ -22,9 +20,23 @@ Tetris::Tetris(int rows, int cols, int left, int top, int blockSize)
         this->map.push_back(rowMap);
     }
 }
-
 Tetris::~Tetris()
 {
+    if (this->iDraw)
+    {
+        delete this->iDraw;
+        this->iDraw = nullptr;
+    }
+    if (this->curBlock)
+    {
+        delete this->curBlock;
+        this->curBlock = nullptr;
+    }
+    if (this->nextBlock)
+    {
+        delete this->nextBlock;
+        this->nextBlock = nullptr;
+    }
 }
 void Tetris::init()
 {
@@ -90,8 +102,11 @@ void Tetris::play()
         if (this->gameOver)
         {
             this->higestScore = this->score;
+            this->iDraw->gameOver();
             system("pause");
+            system("cls");
             this->init();
+            this->createMain();
         }
     }
 }
@@ -135,26 +150,11 @@ void Tetris::keyEvent()
 }
 void Tetris::updateWindow()
 {
-    for (int row = 0; row < this->rows; row++)
-    {
-        for (int col = 0; col < this->cols; col++)
-        {
-            if (this->map[row][col] == 0)
-            {
-                continue;
-            }
-
-            int x = col * blockSize + leftMargin;
-            int y = row * blockSize + topMargin;
-            _SetConsoleCursor(x, y);
-            std::cout << "*";
-        }
-    }
-
-    backBlock.undraw(leftMargin, topMargin);
-    curBlock->draw(leftMargin, topMargin);
-    backNextBlock.undraw(this->cols + 10, this->rows >> 1);
-    nextBlock->draw(this->cols + 10, this->rows >> 1);
+    this->iDraw->unDrawBlock(this->backBlock, 0, 0);
+    this->iDraw->unDrawBlock(this->backNextBlock, 0 + this->cols + 10, 0 + (this->rows >> 1));
+    this->iDraw->drawMap(this->map);
+    this->iDraw->drawBlock(*this->curBlock, 0, 0);
+    this->iDraw->drawBlock(*this->nextBlock, 0 + this->cols + 10, 0 + (this->rows >> 1));
 }
 int Tetris::getDelay()
 {
@@ -204,7 +204,7 @@ void Tetris::clearLine()
         int cn = 0;
         for (int col = 0; col < this->cols; col++)
         {
-            if (this->map[row][col] == 1)
+            if (this->map[row][col] != 0)
             {
                 cn++;
             }
@@ -254,20 +254,5 @@ void Tetris::rotate()
 }
 void Tetris::createMain()
 {
-    // int l_rows = this->rows, l_cols = this->cols;
-    // for (int col = 0; col < l_cols; col++)
-    // {
-    //     _SetConsoleCursor(col, 0);
-    //     std::cout << "*";
-    //     _SetConsoleCursor(col, l_rows);
-    //     std::cout << "*";
-    // }
-    // for (int row = 0; row < l_rows; row++)
-    // {
-    //     _SetConsoleCursor(0, row);
-    //     std::cout << "*";
-    //     ;
-    //     _SetConsoleCursor(l_cols, row);
-    //     std::cout << "*";
-    // }
+    this->iDraw->createMainWindow();
 }

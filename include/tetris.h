@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
-#include "block.h"
 #include "segment.h"
+#include "draw.h"
+#include "block.h"
 #define MAX_LEVEL 5
 #define RECORD_FILE "record_file.txt"
 const int SPEED_QUICK = 50;                                   // ms
@@ -12,9 +13,6 @@ private:
     // init config
     int rows;
     int cols;
-    int blockSize;
-    int leftMargin;
-    int topMargin;
     int delay;
     int level;
 
@@ -34,6 +32,8 @@ private:
     Block backBlock;
     Block backNextBlock;
 
+    Draw *iDraw;
+
 private:
     void init();
     void keyEvent();
@@ -47,7 +47,7 @@ private:
     void createMain();
 
 public:
-    Tetris(int rows, int cols, int left, int top, int blockSize);
+    Tetris(int rows, int cols, Draw *draw);
     ~Tetris();
     void play();
 };
